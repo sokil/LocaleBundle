@@ -1,0 +1,3 @@
+locale:
+    resource: @LocaleBundle/Controller/
+    type:     annotation
