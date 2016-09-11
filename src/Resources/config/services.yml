@@ -2,10 +2,10 @@ services:
     locale.preferred_language_listener:
         class: Sokil\LocaleBundle\EventListener\PreferredLanguageListener
         arguments:
-            - %locale%
-            - %locales%
-            - %locale_map%
-            - @translator
+            - '%locale%'
+            - '%locales%'
+            - '%locale_map%'
+            - '@translator'
         tags:
             - { name: kernel.event_listener, event: kernel.request, method: onKernelRequest, priority: -255 }
 
@@ -14,10 +14,10 @@ services:
 
     locale.iso_codes_languages:
         class: Sokil\IsoCodes
-        factory: [@locale.iso_codes, getLanguages]
+        factory: ['@locale.iso_codes', getLanguages]
 
     locale.supported_locales_provider:
         class: Sokil\LocaleBundle\Provider\SupportedLocalesProvider
         arguments:
-            - %locales%
-            - @locale.iso_codes_languages
+            - '%locales%'
+            - '@locale.iso_codes_languages'
