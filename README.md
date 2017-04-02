@@ -21,6 +21,10 @@ Configure next parameters in `./app/config/parameters.yml`:
 
 Servise `locale.preferred_language_listener` used to set current language from cookie, request URL or `Accept-Language` request header. It enabled by default, if bundle registered.
 
+## Switch languages
+
+Action `setAction` from controller `Sokil\LocaleBundle\Controller\LangController` used to set current lang.
+
 ## Locales provider
 
 Service `locale.supported_locales_provider` used to get list of all supported languages with localised names of language.
