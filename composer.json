@@ -11,7 +11,7 @@
     "require": {
         "php": "^5.5 || ^7.0",
         "sokil/php-isocodes": "^1.0.1",
-        "symfony/framework-bundle": "^2.* | ^3.0"
+        "symfony/framework-bundle": "^2.* || ^3.0"
     },
     "require-dev": {
         "phpunit/phpunit": ">=3.7.38 <6.0",
