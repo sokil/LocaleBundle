@@ -13,22 +13,60 @@ use Symfony\Component\Translation\TranslatorInterface;
  */
 class PreferredLanguageListener implements EventSubscriberInterface
 {
-    private $defaultLocale;
-    private $supportedLocales = [];
-    private $localeMap = [];
     private $translator;
 
+    /**
+     * @var string
+     */
+    private $defaultLocale;
+
+    /**
+     * List of language to locale relations (uk => uk_UA.UTF-8, en => en_GB.UTF-8, ...)
+     * @var array
+     */
+    private $supportedLocales = [];
+
+    /**
+     * Query parameter used to define language
+     * @var string
+     */
+    private $queryParameter = null;
+
+    /**
+     * Cookie parameter used to define language
+     * @var string
+     */
+    private $cookieParameter = null;
+
+
+    /**
+     * Define locale from first token in path
+     * @var bool
+     */
+    private $pathParameter = false;
+
+    /**
+     * @param TranslatorInterface $translator
+     * @param string $defaultLocale
+     * @param array $supportedLocales
+     * @param string $queryParameter
+     * @param string $cookieParameter
+     * @param bool $pathParameter
+     */
     public function __construct(
+        TranslatorInterface $translator,
         $defaultLocale,
         array $supportedLocales,
-        array $localeMap,
-        TranslatorInterface $translator
+        $queryParameter = null,
+        $cookieParameter = null,
+        $pathParameter = null
     ) {
         $this->defaultLocale = $defaultLocale;
         $this->supportedLocales = $supportedLocales;
-        $this->localeMap = $localeMap;
-
         $this->translator = $translator;
+        $this->queryParameter = $queryParameter;
+        $this->cookieParameter = $cookieParameter;
+        $this->pathParameter = $pathParameter;
     }
 
     public function onKernelRequest(GetResponseEvent $event)
@@ -37,41 +75,63 @@ class PreferredLanguageListener implements EventSubscriberInterface
         
         $request->setDefaultLocale($this->defaultLocale);
 
-        $locale = $this->detectLocale($request);
+        // get locale and language
+        $language = $this->detectLanguage($request);
+        $locale = $this->supportedLocales[$language];
 
-        // define locale
-        $request->setLocale($locale);
+        // define request language
+        $request->setLocale($language);
 
-        // define locale
-        $getTextLocales = $this->localeMap[$locale];
-        putenv('LANGUAGE=' . $getTextLocales);
-        putenv('LC_ALL=' . $getTextLocales);
-        setlocale(LC_ALL, $getTextLocales);
+        // define env locale
+        putenv('LANGUAGE=' . $locale);
+        putenv('LC_ALL=' . $locale);
+        setlocale(LC_ALL, $locale);
 
         // define translator locale
-        $this->translator->setLocale($locale);
+        $this->translator->setLocale($language);
     }
 
-    private function detectLocale(Request $request)
+    /**
+     * Get preferred language from list of supported languages
+     *
+     * @param Request $request
+     *
+     * @return null|string
+     */
+    private function detectLanguage(Request $request)
     {
-        // get from cookie
-        if ($request->cookies->has('lang')) {
-            $locale = $request->cookies->get('lang');
-            if (in_array($locale, $this->supportedLocales)) {
-                return $locale;
+        // get from query parameter
+        if (!empty($this->queryParameter)) {
+            if ($request->query->has($this->queryParameter)) {
+                $language = $request->query->get($this->queryParameter);
+                if ($language && isset($this->supportedLocales[$language])) {
+                    return $language;
+                }
             }
         }
 
         // get from path
-        $requestUri = $request->getRequestUri();
-        $uriParts = explode('/', $requestUri);
-        $locale = !empty($uriParts[1]) ? $uriParts[1] : null;
-        if ($locale && in_array($locale, $this->supportedLocales)) {
-            return $locale;
+        if (true === $this->pathParameter) {
+            $requestUri = $request->getRequestUri();
+            $uriParts = explode('/', $requestUri);
+            $language = !empty($uriParts[1]) ? $uriParts[1] : null;
+            if ($language && isset($this->supportedLocales[$language])) {
+                return $language;
+            }
+        }
+
+        // get from cookie
+        if (!empty($this->cookieParameter)) {
+            if ($request->cookies->has($this->cookieParameter)) {
+                $language = $request->cookies->get($this->cookieParameter);
+                if ($language && isset($this->supportedLocales[$language])) {
+                    return $language;
+                }
+            }
         }
 
         // get from header
-        return $request->getPreferredLanguage($this->supportedLocales);
+        return $request->getPreferredLanguage(array_keys($this->supportedLocales));
     }
 
     public static function getSubscribedEvents()

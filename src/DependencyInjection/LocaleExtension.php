@@ -22,6 +22,33 @@ class LocaleExtension extends Extension
         $configuration = new Configuration();
         $config = $this->processConfiguration($configuration, $configs);
 
+        // set query parameter
+        $container->setParameter(
+            'locale.config.query_parameter',
+            empty($config['query_parameter']) ? null : $config['query_parameter']
+        );
+
+        // set cookie parameter
+        $container->setParameter(
+            'locale.config.cookie_parameter',
+            empty($config['cookie_parameter']) ? null : $config['cookie_parameter']
+        );
+
+        // set cookie parameter
+        $container->setParameter(
+            'locale.config.path_parameter',
+            empty($config['path_parameter']) ? false : $config['path_parameter']
+        );
+
+        // supported locales
+        if (empty($config['locales'])) {
+            throw new \Exception('Supported locales not configured');
+        } else {
+            $container->setParameter('locale.config.locales', $config['locales']);
+        }
+
+
+        // load services
         $loader = new Loader\YamlFileLoader($container, new FileLocator(__DIR__.'/../Resources/config'));
         $loader->load('services.yml');
     }

@@ -5,14 +5,14 @@
 ```
 composer.phar require sokil/locale-bundle
 ```
-Configure next parameters in `./app/config/parameters.yml`:
+Configure next parameters in `./app/config/config.yml`:
 
 ```yaml
-    locale: en # default language
-    locales: # available languages
-        - uk
-        - en
-    locale_map: # mapping of languages to locales
+locale:
+    query_parameter: lang
+    cookie_parameter: lang
+    path_parameter: false
+    locales: # mapping of languages to locales
         uk: uk_UA.utf8
         en: en_US.utf8
 ```

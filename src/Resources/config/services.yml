@@ -2,10 +2,12 @@ services:
     locale.preferred_language_listener:
         class: Sokil\LocaleBundle\EventListener\PreferredLanguageListener
         arguments:
-            - '%locale%'
-            - '%locales%'
-            - '%locale_map%'
             - '@translator'
+            - '%locale%'
+            - '%locale.config.locales%'
+            - '%locale.config.query_parameter%'
+            - '%locale.config.cookie_parameter%'
+            - '%locale.config.path_parameter%'
         tags:
             - { name: kernel.event_listener, event: kernel.request, method: onKernelRequest, priority: -255 }
 
@@ -19,5 +21,5 @@ services:
     locale.supported_locales_provider:
         class: Sokil\LocaleBundle\Provider\SupportedLocalesProvider
         arguments:
-            - '%locales%'
+            - '%locale.config.locales%'
             - '@locale.iso_codes_languages'
